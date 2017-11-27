@@ -1,6 +1,6 @@
 # joebrains
 
-Work-in-progress code for an autocompleting Reddit bot, using Python/PRAW and Clojure.
+Work-in-progress code for the brains of an autocompleting Reddit bot in Clojure.
 
 ## Installation
 
