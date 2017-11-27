@@ -7,7 +7,7 @@ import praw
 #this opens, reads, closes file and uses text
 
 #filepath of document full of previous replies
-commentPath = '/Users/Caiti/Documents/averagejoe/oldComments.txt'
+commentPath = '/Users/Caiti/Documents/GitHub/AverageJoe/oldComments.txt'
 
 #the instance of reddit joe is using, with bot info for signin
 bot = praw.Reddit(user_agent='autoCompleteBot',
