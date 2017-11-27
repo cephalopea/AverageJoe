@@ -1,6 +1,6 @@
 # joebrains
 
-FIXME: description
+Work-in-progress code for an autocompleting Reddit bot, using Python/PRAW and Clojure.
 
 ## Installation
 
