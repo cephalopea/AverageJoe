@@ -22,6 +22,18 @@
 (def samplewords
   '("the" "dog" "ran" "towards" "the" "big" "fat" "steak" "so" "he" "could" "eat" "it" "but" "the" "dog" "was" "eaten" "by" "a" "big" "bear" "towards" "the" "end" "of" "his" "life"))
 
+(def wordsource
+  "/Users/Caiti/Documents/Github/AverageJoe/redditinput.txt")
+
+(defn getwords
+  [filepath]
+  (let [words (slurp filepath)]
+    (clojure.string/split words #" ")
+    ))
+
+(def words
+  (getwords wordsource))
+
 ;;takes a word and a list with at least 3 items
 ;;returns a tuple of ((next words) (2 words later))
 (defn findword
@@ -40,6 +52,8 @@
           (= (nth container n) word) (recur (cons (nth container (inc n)) lump) (cons (nth container (+ 2 n)) glomp) (inc n))
           (recur lump glomp (inc n)))))))
 
+;(findword "Boop!" words)
+
 ;;takes a string (word) and two lists (lump and lomp), returns map
 (defn usewordmap
   [word lump lomp passedmap]
@@ -48,7 +62,7 @@
       (let [nextnextmap (assoc nextmap :nextnext (into [] lomp))]
         (assoc passedmap (keyword word) nextnextmap)))))
 
-(usewordmap "the" (first (findword "the" samplewords)) (last (findword "the" samplewords)) {})
+;(usewordmap "Hello" (first (findword "Hello" words)) (last (findword "Hello" words)) {})
 
 ;;processes a list of words, returns a big map of each word with its next and nextnext words lists
 ;;output of (processcontainer samplewords) shown in cheatcode
@@ -62,17 +76,17 @@
            lumpleft container
            wordsmap wordmup]
       (if
-        (= 2 (count lumpleft)) wordsmap
+        (= 10 (count lumpleft)) wordsmap
         (if
           (empty? used) (let [newmap (usewordmap word (first (findword word container)) (last (findword word container)) wordsmap)]
                           (recur (first (rest lumpleft)) (cons word used) (rest lumpleft) newmap))
           (if
             (contains? (set used) word) (recur (first (rest lumpleft)) used (rest lumpleft) wordsmap)
             (let [newmap (usewordmap word (first (findword word container)) (last (findword word container)) wordsmap)]
-              (recur (first (rest lumpleft)) (cons word used) (rest lumpleft) newmap)
-              )))))))
+                (recur (first (rest lumpleft)) (cons word used) (rest lumpleft) newmap))))))))
 
-(processcontainer samplewords)
+(def wordmap 
+  (processcontainer words))
 
 ;;this is the map (processcontainer samplewords) produces
 ;;just a reference for me, not to be used
@@ -97,9 +111,88 @@
    :ran {:word "ran", :next ["the"], :nextnext ["towards"]}
    :steak {:word "steak", :next ["he"], :nextnext ["so"]}
    :a {:word "a", :next ["bear"], :nextnext ["big"]}})
+
+;;returns a random genome with 4 random integers and 2 fibonacci numbers at the end
+(defn random-genome
+  []
+  (repeatedly 10 #(rand-nth words)))
+
+;(random-genome)
+
+;;returns a number indicating how bad the genome is at being an ascending fibonaccish trio
+(defn badness
+  [genome]
+  (let [member 0
+        badscore 0]
+    (loop [n member
+           bad badscore]
+      (let [thisword (nth genome n)
+            nextword (nth genome (inc n))]
+        (let [thisnext (get-in wordmap [(keyword thisword) :next])]
+          (if
+            (= n (- (count genome) 2)) bad
+            (if
+              (contains? (set (thisnext)) nextword) (recur (inc n) bad)
+              (recur (inc n) (+ 5 bad)))))))))
+
+(badness ("Boop!" "Boop!" "world!" "Doing" "world!" "world!" "Something!" "Boop!" "world!" "Boop!"))
+
+ (comment
+(defn mutate
+  "Returns a mutated version of genome."
+  [genome wordlist]
+  (let [mutation-point (rand-int 9)]
+    (let [newword (rand-nth wordlist)]
+      (assoc (vec wordlist) mutation-point newword))))
+
+(defn crossover
+  "Returns the result of crossing over genome1 and genome2."
+  [genome1 genome2]
+  (let [crossover-point (rand-int 8)]
+    (vec (concat (take crossover-point genome1)
+                 (drop crossover-point genome2)))))
+
+(defn select
+  "Returns a best genome of a randomly selected 5 from the sorted population."
+  [population]
+  (let [pop-size (count population)]
+    (nth population
+         (apply min (repeatedly 5 #(rand-int pop-size))))))
+
+(defn evolve
+  "Runs a genetic algorithm to solve the silly problem."
+  [pop-size]
+  (println "Starting evolution...")
+  (loop [generation 0
+         population (sort-by badness (repeatedly pop-size (random-genome)))]
+    (let [best (first population)]
+      (if (> generation 100)
+        (do 
+          (println "Warning: suboptimal result.")
+          (println "Best genome:" best))
+        (let [best-badness (badness best)]
+          (println "======================")
+          (println "Generation:" generation)
+          (println "Best badness:" best-badness)
+          (println "Best genome:" best)
+          (println "Median badness:" (badness (nth population (int (/ pop-size 2)))))
+          (if (= 0 best-badness) ;; success!
+            (println "Success:" best)
+            (recur 
+              (inc generation)
+              (sort-by badness      
+                       (concat
+                         (repeatedly (* 1/2 pop-size) #(mutate (select population)))
+                         (repeatedly (* 1/4 pop-size) #(crossover (select population)
+                                                                  (select population)))
+                         (repeatedly (* 1/4 pop-size) #(select population)))))))))))
+
+(evolve 100)
+ )
+
 ;; @@
 ;; =>
-;;; {"type":"html","content":"<span class='clj-var'>#&#x27;harmonious-peak/cheatcode</span>","value":"#'harmonious-peak/cheatcode"}
+;;; {"type":"html","content":"<span class='clj-nil'>nil</span>","value":"nil"}
 ;; <=
 
 ;; @@
