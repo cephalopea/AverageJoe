@@ -2,23 +2,23 @@ import praw
 import subprocess
 
 #filepath of document full of previous replies
-commentPath = '/Users/Caiti/Documents/GitHub/AverageJoe/oldComments.txt'
+commentPath = 'something.txt'
 
 #filepath of document full of user comment words
-wordPath = '/Users/Caiti/Documents/GitHub/AverageJoe/redditinput.txt'
+wordPath = 'something.txt'
 
 #filepath of Clojure jar for joebrains
-jarPath = '/Users/Caiti/Documents/GitHub/AverageJoe/joebrains/target/uberjar/joebrains-0.1.0-SNAPSHOT-standalone.jar'
+jarPath = 'something.jar'
 
 #filepath of joe's output
-joePath = '/Users/Caiti/Documents/GitHub/AverageJoe/joeoutput.txt'
+joePath = 'something.txt'
 
 #the instance of reddit joe is using, with bot info for signin
-bot = praw.Reddit(user_agent='autoCompleteBot',
-                  client_id='aAXr3ojB9PFHuQ',
-                  client_secret='QGUs9LBBqgrH9EPYKKnWQDrxmOs',
-                  username='MedianJoseph',
-                  password='g14nt5n4k3b1rthd4yc4k3')
+bot = praw.Reddit(user_agent='thing',
+                  client_id='thing',
+                  client_secret='thing',
+                  username='user',
+                  password='user')
 
 oldComments = ['placeholder', 'things']
 
@@ -40,7 +40,7 @@ def init_fn():
 #used to decide whether to reply
 def check_if_reply():
     for comment in grabbedStuff:
-        if 'the' in comment.body:
+        if ('machine' or 'machines' or 'taking our jobs' or 'automation' or 'robot' or 'automated' or 'bot' or 'spam') in comment.body:
             if joe_check(comment) == True:
                 print("Not replying.")
             else:
