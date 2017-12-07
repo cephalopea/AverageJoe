@@ -1,7 +1,5 @@
 import praw
-import nltk
-from nltk.tokenize import RegexpTokenizer
-import sys
+import subprocess
 
 #make bot shell here
 #do majority of interesting stuff in clojure
@@ -13,7 +11,13 @@ import sys
 commentPath = '/Users/Caiti/Documents/GitHub/AverageJoe/oldComments.txt'
 
 #filepath of document full of user comment words
-wordPath = '/Users/Caiti/Documents/Github/AverageJoe/redditinput.txt'
+wordPath = '/Users/Caiti/Documents/GitHub/AverageJoe/redditinput.txt'
+
+#filepath of Clojure jar for joebrains
+jarPath = '/Users/Caiti/Documents/GitHub/AverageJoe/joebrains/target/uberjar/joebrains-0.1.0-SNAPSHOT-standalone.jar'
+
+#filepath of joe's output
+joePath = '/Users/Caiti/Documents/GitHub/AverageJoe/joeoutput.txt'
 
 #the instance of reddit joe is using, with bot info for signin
 bot = praw.Reddit(user_agent='autoCompleteBot',
@@ -23,69 +27,85 @@ bot = praw.Reddit(user_agent='autoCompleteBot',
                   password='g14nt5n4k3b1rthd4yc4k3')
 
 #this is the subreddit joe trawls, change string to change sub
-#actual destination: 'fffffffuuuuuuuuuuuu'
+#this sub is just a private one with me and the bot
+#probably change this before turning it in
+#so Lee isn't staring at your reddit history
 subreddit = bot.subreddit('testingmedianjoseph')
 
 #list of comments in sub
 grabbedStuff = subreddit.stream.comments()
 
+#reads joe's comment file
+def get_joe_reply():
+    joeFile = open(joePath, 'r')
+    output = joeFile.readlines()
+    joeFile.close()
+    return output
+
 #the funtion joe actually uses to reply to things, and track prev replies
 def reply(container, com):
     message = "Boop!"
     com.reply(message)
-    container.append(com.id + '\n')
+    container.append(com.author.name + '\n')
     newCommentFile = open(commentPath, 'w')
     for element in container:
-        if element != '\n':
-             newCommentFile.write(element)
+        newCommentFile.write(element)
     newCommentFile.close()
     newComments = open(commentPath, 'r').readlines()
     print('Replied to comment.')
+    return True
 
 #checks if joe has already replied to a comment
 def joe_check(commnt, olde):
     for line in olde:
-            if (commnt.id + '\n') == line:
+            if (commnt.author.name + '\n') == line:
                 print("Found previously replied comment.")
                 return True
     return False
-
+                
 def process_raw_comments(cList):
     newList = []
-    tokenizer = RegexpTokenizer(r'\w+')
     for comment in cList:
-        words = tokenizer.tokenize(comment)
-        newList.append(words)
-    export_words(cList)
+        words = comment.split(" ")
+        for word in words:
+            newList.append(word)
+    export_words(newList)
     return newList
 
+def format_reply():
+    reply = get_joe_reply()
+    print(reply)
+
 def export_words(wordList):
-    wordFile = open(wordPath, 'w')
+    wordFile = open(wordPath, 'w+')
     for word in wordList:
-        wordFile.write(word + " ")
+        wordFile.write(word)
+        wordFile.write(" ")
+    wordFile.close()
     print("Content exported.")
-    sys.exit()
+    print("Starting .jar file.")
+    subp = subprocess.Popen(['java', '-jar', jarPath])
+    subp.wait()
+    format_reply()
     return wordList
     
 def get_comments(comment):
     user = comment.author
     commentList = []
-    for comment in user.comments.new(limit=None):
+    for comment in user.comments.new(limit=100):
         commentList.append(comment.body)
     process_raw_comments(commentList)
-    #can't print this, emojis confuse idle3
     return commentList
 
 #used to decide whether to reply
 def check_if_reply(comments, old):
     for comment in comments:
-        if 'Boop!' in comment.body:
+        if 'dog' in comment.body:
             if joe_check(comment, old) == True:
                 print("Not replying.")
             else:
                 print("Found new comment.")
-                get_comments(comment)
- #               reply(old, comment)    
+                get_comments(comment)    
 
 #gets list of already replied comments and starts the thing
 def init_fn():
@@ -97,3 +117,4 @@ def init_fn():
     check_if_reply(grabbedStuff, oldComments)
 
 init_fn()
+
