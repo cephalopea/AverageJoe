@@ -155,7 +155,7 @@
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (export (evolve 200 50)))
+  (export (evolve 200 200)))
 
 ;; @@
 ;; ->

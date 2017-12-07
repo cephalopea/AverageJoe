@@ -1,12 +1,6 @@
 import praw
 import subprocess
 
-#make bot shell here
-#do majority of interesting stuff in clojure
-#slurp text file generated here
-#spit text file for this to use
-#this opens, reads, closes file and uses text
-
 #filepath of document full of previous replies
 commentPath = '/Users/Caiti/Documents/GitHub/AverageJoe/oldComments.txt'
 
@@ -26,55 +20,62 @@ bot = praw.Reddit(user_agent='autoCompleteBot',
                   username='MedianJoseph',
                   password='g14nt5n4k3b1rthd4yc4k3')
 
+oldComments = ['placeholder', 'things']
+
 #this is the subreddit joe trawls, change string to change sub
-#this sub is just a private one with me and the bot
-#probably change this before turning it in
-#so Lee isn't staring at your reddit history
-subreddit = bot.subreddit('testingmedianjoseph')
+subreddit = bot.subreddit('The_Donald')
 
 #list of comments in sub
 grabbedStuff = subreddit.stream.comments()
 
-#reads joe's comment file
-def get_joe_reply():
-    joeFile = open(joePath, 'r')
-    output = joeFile.readlines()
-    joeFile.close()
-    return output
+#gets list of already replied comments and starts the thing
+def init_fn():
+    print("Accessing previously replied comments.")
+    commentFile = open(commentPath, 'r')
+    oldComments = commentFile.readlines()
+    commentFile.close()
+    print("Checking for new comments.")
+    check_if_reply()
 
-#the funtion joe actually uses to reply to things, and track prev replies
-def reply(container, com):
-    message = get_joe_reply()
-    explanation = ("\n\n*****Beep boop, I'm a bot! See my source code on [GitHub!](https://github.com/cephalopea/AverageJoe)")
-    replyText = ("Autocomplete: " + message + explanation)
-    com.reply(replyText)
-    container.append(com.author.name + '\n')
-    newCommentFile = open(commentPath, 'w')
-    for element in container:
-        newCommentFile.write(element)
-    newCommentFile.close()
-    newComments = open(commentPath, 'r').readlines()
-    print('Replied to comment.')
-    return True
+#used to decide whether to reply
+def check_if_reply():
+    for comment in grabbedStuff:
+        if 'the' in comment.body:
+            if joe_check(comment) == True:
+                print("Not replying.")
+            else:
+                print("Found new comment.")
+                get_other_comments(comment)
 
 #checks if joe has already replied to a comment
-def joe_check(commnt, olde):
-    for line in olde:
-            if (commnt.author.name + '\n') == line:
+def joe_check(cment):
+    for line in oldComments:
+            if (cment.author.name + '\n') == line:
                 print("Found previously replied comment.")
                 return True
-    return False
-                
-def process_raw_comments(cList):
+    return False 
+
+#get selected comments' author's last 100 comments
+def get_other_comments(cment):
+    user = cment.author
+    commentList = []
+    for comment in user.comments.new(limit=100):
+        commentList.append(comment.body)
+    process_raw_comments(commentList, cment)
+    return commentList
+
+#processes user's comments into one long, awful list of words
+def process_raw_comments(cList, cment):
     newList = []
     for comment in cList:
         words = comment.split(" ")
         for word in words:
             newList.append(word)
-    export_words(newList)
+    export_words(newList, cment)
     return newList
 
-def export_words(wordList):
+#exports words to .txt file and runs jar with clojure thing
+def export_words(wordList, cment):
     wordFile = open(wordPath, 'w+')
     for word in wordList:
         wordFile.write(word)
@@ -84,35 +85,30 @@ def export_words(wordList):
     print("Starting .jar file.")
     subp = subprocess.Popen(['java', '-jar', jarPath])
     subp.wait()
-    reply()
-    return wordList
-    
-def get_comments(comment):
-    user = comment.author
-    commentList = []
-    for comment in user.comments.new(limit=100):
-        commentList.append(comment.body)
-    process_raw_comments(commentList)
-    return commentList
+    reply(cment)
+    return wordList 
 
-#used to decide whether to reply
-def check_if_reply(comments, old):
-    for comment in comments:
-        if 'dog' in comment.body:
-            if joe_check(comment, old) == True:
-                print("Not replying.")
-            else:
-                print("Found new comment.")
-                get_comments(comment)    
+#the funtion joe actually uses to reply to things, and track prev replies
+def reply(cment):
+    message = get_joe_reply()
+    explanation = ("\n\n*****Beep boop, I'm a bot! See my source code on [GitHub!](https://github.com/cephalopea/AverageJoe)")
+    replyText = ("Autocomplete: " + message[0] + explanation)
+    cment.reply(replyText)
+    oldComments.append(cment.author.name + '\n')
+    newCommentFile = open(commentPath, 'w')
+    for element in oldComments:
+        newCommentFile.write(element)
+    newCommentFile.close()
+    newComments = open(commentPath, 'r').readlines()
+    print('Replied to comment.')
+    return True
 
-#gets list of already replied comments and starts the thing
-def init_fn():
-    print("Accessing previously replied comments.")
-    commentFile = open(commentPath, 'r')
-    oldComments = commentFile.readlines()
-    commentFile.close()
-    print("Checking for new comments.")
-    check_if_reply(grabbedStuff, oldComments)
+#reads joe's comment file
+def get_joe_reply():
+    joeFile = open(joePath, 'r')
+    output = joeFile.readlines()
+    joeFile.close()
+    return output
 
 init_fn()
 
