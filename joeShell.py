@@ -91,7 +91,7 @@ def export_words(wordList, cment):
 #the funtion joe actually uses to reply to things, and track prev replies
 def reply(cment):
     message = get_joe_reply()
-    explanation = ("\n\n*****Beep boop, I'm a bot! See my source code on [GitHub!](https://github.com/cephalopea/AverageJoe)")
+    explanation = ("\n\n*****\n\nBeep boop, I'm a bot! See my source code on [GitHub!](https://github.com/cephalopea/AverageJoe)")
     replyText = ("Autocomplete: " + message[0] + explanation)
     cment.reply(replyText)
     oldComments.append(cment.author.name + '\n')
