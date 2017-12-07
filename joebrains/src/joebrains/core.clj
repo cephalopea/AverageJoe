@@ -10,10 +10,10 @@
 
 ;The filepath of the source file used by this script.
 (def wordsource
-  "/Users/Caiti/Documents/Github/AverageJoe/redditinput.txt")
+  "something.txt")
 
 (def exportsource
-  "/Users/Caiti/Documents/Github/AverageJoe/joeoutput.txt")
+  "something.txt")
 
 (defn getwords
   "Retrieves contents of a file, splits its contents at spaces. Output is formatted like samplewords."
@@ -47,8 +47,6 @@
     (let [nextmap (assoc wordmap :next lump)]
       (assoc passedmap (keyword word) nextmap))))
 
-;this is finicky and i don't quite know why
-;something about an indexoutofbounds error in java, mostly when run from python script
 (defn processonecontainer
   "Processes a list of words, returns a big map of word maps from useonewordmap."
   [container]
@@ -153,7 +151,7 @@
   (spit exportsource (clojure.string/join " " genome)))
 
 (defn -main
-  "I don't do a whole lot ... yet."
+  "Runs in .jar file."
   [& args]
   (export (evolve 200 200)))
 
