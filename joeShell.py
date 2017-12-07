@@ -20,10 +20,10 @@ bot = praw.Reddit(user_agent='thing',
                   username='user',
                   password='user')
 
-oldComments = ['placeholder', 'things']
+oldComments = ['placeholder\n', 'things\n']
 
 #this is the subreddit joe trawls, change string to change sub
-subreddit = bot.subreddit('The_Donald')
+subreddit = bot.subreddit('placeholder subreddit: insert actual sub here')
 
 #list of comments in sub
 grabbedStuff = subreddit.stream.comments()
@@ -40,7 +40,7 @@ def init_fn():
 #used to decide whether to reply
 def check_if_reply():
     for comment in grabbedStuff:
-        if ('machine' or 'machines' or 'taking our jobs' or 'automation' or 'robot' or 'automated' or 'bot' or 'spam') in comment.body:
+        if 'placeholder text: insert search term' in comment.body:
             if joe_check(comment) == True:
                 print("Not replying.")
             else:
@@ -92,7 +92,7 @@ def export_words(wordList, cment):
 def reply(cment):
     message = get_joe_reply()
     explanation = ("\n\n*****\n\nBeep boop, I'm a bot! See my source code on [GitHub!](https://github.com/cephalopea/AverageJoe)")
-    replyText = ("Autocomplete: " + message[0] + explanation)
+    replyText = ("Did you mean: " + message[0] + "?" + explanation)
     cment.reply(replyText)
     oldComments.append(cment.author.name + '\n')
     newCommentFile = open(commentPath, 'w')
