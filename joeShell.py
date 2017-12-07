@@ -44,8 +44,10 @@ def get_joe_reply():
 
 #the funtion joe actually uses to reply to things, and track prev replies
 def reply(container, com):
-    message = "Boop!"
-    com.reply(message)
+    message = get_joe_reply()
+    explanation = ("\n\n*****Beep boop, I'm a bot! See my source code on [GitHub!](https://github.com/cephalopea/AverageJoe)")
+    replyText = ("Autocomplete: " + message + explanation)
+    com.reply(replyText)
     container.append(com.author.name + '\n')
     newCommentFile = open(commentPath, 'w')
     for element in container:
@@ -72,10 +74,6 @@ def process_raw_comments(cList):
     export_words(newList)
     return newList
 
-def format_reply():
-    reply = get_joe_reply()
-    print(reply)
-
 def export_words(wordList):
     wordFile = open(wordPath, 'w+')
     for word in wordList:
@@ -86,7 +84,7 @@ def export_words(wordList):
     print("Starting .jar file.")
     subp = subprocess.Popen(['java', '-jar', jarPath])
     subp.wait()
-    format_reply()
+    reply()
     return wordList
     
 def get_comments(comment):
