@@ -1,46 +1,42 @@
 import praw
 import subprocess
+import sys
 
 #filepath of document full of previous replies
-commentPath = 'something.txt'
+commentPath = 'placeholder.txt'
 
 #filepath of document full of user comment words
-wordPath = 'something.txt'
+wordPath = 'placeholder.txt'
 
 #filepath of Clojure jar for joebrains
-jarPath = 'something.jar'
+jarPath = 'placeholder.jar'
 
 #filepath of joe's output
-joePath = 'something.txt'
+joePath = 'placeholder.txt'
 
 #the instance of reddit joe is using, with bot info for signin
-bot = praw.Reddit(user_agent='thing',
-                  client_id='thing',
-                  client_secret='thing',
-                  username='user',
-                  password='user')
+bot = praw.Reddit(user_agent='placeholder',
+                  client_id='placeholder',
+                  client_secret='placeholder',
+                  username='placeholder',
+                  password='placeholder')
 
-oldComments = ['placeholder\n', 'things\n']
+#gets list of reddit users the bot has already commented on
+commentFile = open(commentPath, 'r')
+oldComments = commentFile.readlines()
+commentFile.close()
 
 #this is the subreddit joe trawls, change string to change sub
-subreddit = bot.subreddit('placeholder subreddit: insert actual sub here')
+subreddit = bot.subreddit('placeholder')
 
 #list of comments in sub
 grabbedStuff = subreddit.stream.comments()
 
-#gets list of already replied comments and starts the thing
-def init_fn():
-    print("Accessing previously replied comments.")
-    commentFile = open(commentPath, 'r')
-    oldComments = commentFile.readlines()
-    commentFile.close()
-    print("Checking for new comments.")
-    check_if_reply()
-
 #used to decide whether to reply
 def check_if_reply():
+    print("Checking for new comments.")
     for comment in grabbedStuff:
-        if 'placeholder text: insert search term' in comment.body:
+        if ('placeholder' in comment.body):
             if joe_check(comment) == True:
                 print("Not replying.")
             else:
@@ -74,7 +70,7 @@ def process_raw_comments(cList, cment):
     export_words(newList, cment)
     return newList
 
-#exports words to .txt file and runs jar with clojure thing
+#exports words to .txt file and runs .jar with clojure thing
 def export_words(wordList, cment):
     wordFile = open(wordPath, 'w+')
     for word in wordList:
@@ -91,8 +87,8 @@ def export_words(wordList, cment):
 #the funtion joe actually uses to reply to things, and track prev replies
 def reply(cment):
     message = get_joe_reply()
-    explanation = ("\n\n*****\n\nBeep boop, I'm a bot! See my source code on [GitHub!](https://github.com/cephalopea/AverageJoe)")
-    replyText = ("Did you mean: " + message[0] + "?" + explanation)
+    explanation = ("\n\n*****\n\nBeep boop, I'm a bot! I generate predictive text based on your comment history using genetic programming.\n\nCheck out my source code on [GitHub!](https://github.com/cephalopea/AverageJoe)")
+    replyText = ("Here's my best guess at what you'd say next: *" + message[0] + "*." + explanation)
     cment.reply(replyText)
     oldComments.append(cment.author.name + '\n')
     newCommentFile = open(commentPath, 'w')
@@ -101,6 +97,7 @@ def reply(cment):
     newCommentFile.close()
     newComments = open(commentPath, 'r').readlines()
     print('Replied to comment.')
+    sys.exit()
     return True
 
 #reads joe's comment file
@@ -110,5 +107,5 @@ def get_joe_reply():
     joeFile.close()
     return output
 
-init_fn()
+check_if_reply()
 
