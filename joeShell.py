@@ -32,11 +32,10 @@ subreddit = bot.subreddit('placeholder')
 #list of comments in sub
 grabbedStuff = subreddit.stream.comments()
 
-keepLooping = True
-
+#handles order of operations for bot- inbox messages first, then decide if checking for new comments
 def _init():
     keepLooping = True
-    check_for_mentions()
+    check_for_messages()
     print("Mentions check completed.")
     userInput = input("Do you want to check for new comments fitting your criteria? ")
     if (userInput == "yes"):
@@ -47,14 +46,16 @@ def _init():
         print("Finishing without checking new comments.")
         sys.exit()
 
-def check_for_mentions():
+#checks for inbox messages
+def check_for_messages():
     print("Checking for mentions.")
     for message in bot.inbox.unread(limit=None):
         check_if_mention_reply(message)
         message.mark_read()
 
+#checks if a message is a mention (gets predictive text) or something else (gets user reply)
 def check_if_mention_reply(mentn):
-    print("Checking for new messages fitting criteria.")
+    print("Classifying messages.")
     if ('/u/MedianJoseph autocomplete' in mentn.body):
         if joe_check(mentn) == True:
             print("Not replying.")
@@ -64,6 +65,7 @@ def check_if_mention_reply(mentn):
     else:
         get_operator_reply(mentn)
 
+#allows user to reply from idle or choose not to reply
 def get_operator_reply(mentn):
     userInput = input("Here's the message: ---" + mentn.body + "--- Type in skip to skip replying to this message, or type your reply here to write a reply. ")
     if (reply == "skip"):
@@ -140,17 +142,19 @@ def reply(cment):
         newCommentFile.close()
         newComments = open(commentPath, 'r').readlines()
         print('Replied to comment.')
-        if keepLooping == False:
-            sys.exit()
-        else:
+        keepLooping = input("Do you want to keep going? ")
+        if (keepLooping == "yes"):
             print("Starting reply process for next mention.")
-    else:
-        if keepLooping == False:
-            print("Okay. Finishing without replying.")
-            sys.exit()
         else:
+            sys.exit()
+    else:
+        keepLooping = input("Do you want to keep going? ")
+        if (keepLooping == "yes"):
             print("Attempting to respond to user mention again.")
             get_other_comments(cment)
+        else:
+            print("Okay. Finishing without replying.")
+            sys.exit()
     return True
 
 #reads joe's comment file
