@@ -27,7 +27,7 @@ oldComments = commentFile.readlines()
 commentFile.close()
 
 #this is the subreddit joe trawls, change string to change sub
-subreddit = bot.subreddit('AskReddit')
+subreddit = bot.subreddit('placeholder')
 
 #list of comments in sub
 grabbedStuff = subreddit.stream.comments()
@@ -65,7 +65,7 @@ def check_if_mention_reply(mentn):
         get_operator_reply(mentn)
 
 def get_operator_reply(mentn):
-    userInput = input("Here's the message: " + mentn.body + " Type in skip to skip replying to this message, or type your reply here to write a reply. ")
+    userInput = input("Here's the message: ---" + mentn.body + "--- Type in skip to skip replying to this message, or type your reply here to write a reply. ")
     if (reply == "skip"):
         print("Skipping this message.")
     else:
