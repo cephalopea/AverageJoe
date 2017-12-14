@@ -27,16 +27,57 @@ oldComments = commentFile.readlines()
 commentFile.close()
 
 #this is the subreddit joe trawls, change string to change sub
-subreddit = bot.subreddit('placeholder')
+subreddit = bot.subreddit('AskReddit')
 
 #list of comments in sub
 grabbedStuff = subreddit.stream.comments()
 
+keepLooping = True
+
+def _init():
+    keepLooping = True
+    check_for_mentions()
+    print("Mentions check completed.")
+    userInput = input("Do you want to check for new comments fitting your criteria? ")
+    if (userInput == "yes"):
+        print("Checking for new comments.")
+        keepLooping = False
+        check_if_reply(grabbedStuff)
+    else:
+        print("Finishing without checking new comments.")
+        sys.exit()
+
+def check_for_mentions():
+    print("Checking for mentions.")
+    for message in bot.inbox.unread(limit=None):
+        check_if_mention_reply(message)
+        message.mark_read()
+
+def check_if_mention_reply(mentn):
+    print("Checking for new messages fitting criteria.")
+    if ('/u/MedianJoseph autocomplete' in mentn.body):
+        if joe_check(mentn) == True:
+            print("Not replying.")
+        else:
+            print("Found new comment.")
+            get_other_comments(mentn)
+    else:
+        get_operator_reply(mentn)
+
+def get_operator_reply(mentn):
+    userInput = input("Here's the message: " + mentn.body + " Type in skip to skip replying to this message, or type your reply here to write a reply. ")
+    if (reply == "skip"):
+        print("Skipping this message.")
+    else:
+        explanation = ("\n\n*****\n\nBeep boop, I'm a bot! I generate predictive text based on your comment history using genetic programming. (This comment was written by my programmer.)\n\nHave me predict your next comment by replying with /u/MedianJoseph autocomplete.\n\nCheck out my source code on [GitHub](https://github.com/cephalopea/AverageJoe)!")
+        mentn.reply(userInput + explanation)
+        print("Replied to comment.")
+
 #used to decide whether to reply
-def check_if_reply():
-    print("Checking for new comments.")
-    for comment in grabbedStuff:
-        if ('placeholder' in comment.body):
+def check_if_reply(container):
+    print("Checking for new comments fitting criteria.")
+    for comment in container:
+        if ('insert search term here' in comment.body):
             if joe_check(comment) == True:
                 print("Not replying.")
             else:
@@ -87,17 +128,29 @@ def export_words(wordList, cment):
 #the funtion joe actually uses to reply to things, and track prev replies
 def reply(cment):
     message = get_joe_reply()
-    explanation = ("\n\n*****\n\nBeep boop, I'm a bot! I generate predictive text based on your comment history using genetic programming.\n\nCheck out my source code on [GitHub!](https://github.com/cephalopea/AverageJoe)")
-    replyText = ("Here's my best guess at what you'd say next: *" + message[0] + "*." + explanation)
-    cment.reply(replyText)
-    oldComments.append(cment.author.name + '\n')
-    newCommentFile = open(commentPath, 'w')
-    for element in oldComments:
-        newCommentFile.write(element)
-    newCommentFile.close()
-    newComments = open(commentPath, 'r').readlines()
-    print('Replied to comment.')
-    sys.exit()
+    userInput = input("Here's what I've come up with: " + message[0] + ". Should I reply with that? ")
+    if userInput == "yes":
+        explanation = ("\n\n*****\n\nBeep boop, I'm a bot! I generate predictive text based on your comment history using genetic programming.\n\nHave me predict your next comment by replying with /u/MedianJoseph autocomplete.\n\nCheck out my source code on [GitHub](https://github.com/cephalopea/AverageJoe)!")
+        replyText = ("Here's my best guess at what you'd say next: *" + message[0] + "*." + explanation)
+        cment.reply(replyText)
+        oldComments.append(cment.author.name + '\n')
+        newCommentFile = open(commentPath, 'w')
+        for element in oldComments:
+            newCommentFile.write(element)
+        newCommentFile.close()
+        newComments = open(commentPath, 'r').readlines()
+        print('Replied to comment.')
+        if keepLooping == False:
+            sys.exit()
+        else:
+            print("Starting reply process for next mention.")
+    else:
+        if keepLooping == False:
+            print("Okay. Finishing without replying.")
+            sys.exit()
+        else:
+            print("Attempting to respond to user mention again.")
+            get_other_comments(cment)
     return True
 
 #reads joe's comment file
@@ -107,5 +160,5 @@ def get_joe_reply():
     joeFile.close()
     return output
 
-check_if_reply()
+_init()
 
