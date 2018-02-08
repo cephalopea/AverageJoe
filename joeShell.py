@@ -21,13 +21,16 @@ bot = praw.Reddit(user_agent='placeholder',
                   username='placeholder',
                   password='placeholder')
 
-#gets list of reddit users the bot has already commented on
+gets list of reddit users the bot has already commented on
 commentFile = open(commentPath, 'r')
 oldComments = commentFile.readlines()
 commentFile.close()
 
 #this is the subreddit joe trawls, change string to change sub
 subreddit = bot.subreddit('placeholder')
+
+#the average length of a user's comment, set by process_other_comments()
+avgLength = "25"
 
 #list of comments in sub
 grabbedStuff = subreddit.stream.comments()
@@ -36,42 +39,40 @@ grabbedStuff = subreddit.stream.comments()
 def _init():
     keepLooping = True
     check_for_messages()
-    print("Mentions check completed.")
+    print("Message check completed.")
     userInput = input("Do you want to check for new comments fitting your criteria? ")
     if (userInput == "yes"):
-        print("Checking for new comments.")
-        keepLooping = False
         check_if_reply(grabbedStuff)
     else:
         print("Finishing without checking new comments.")
         sys.exit()
-
+        
 #checks for inbox messages
 def check_for_messages():
-    print("Checking for mentions.")
+    print("Checking for messages.")
     for message in bot.inbox.unread(limit=None):
         check_if_mention_reply(message)
+        message.upvote()
         message.mark_read()
 
 #checks if a message is a mention (gets predictive text) or something else (gets user reply)
 def check_if_mention_reply(mentn):
     print("Classifying messages.")
     if ('/u/MedianJoseph autocomplete' in mentn.body):
-        if joe_check(mentn) == True:
-            print("Not replying.")
-        else:
-            print("Found new comment.")
-            get_other_comments(mentn)
+        print("Found new mention.")
+        get_other_comments(mentn)
     else:
         get_operator_reply(mentn)
 
 #allows user to reply from idle or choose not to reply
 def get_operator_reply(mentn):
-    userInput = input("Here's the message: ---" + mentn.body + "--- Type in skip to skip replying to this message, or type your reply here to write a reply. ")
-    if (reply == "skip"):
+    userInput = input("Here's the message: ---" + mentn.body + "--- Type skip to skip replying to this message, autocomplete to generate a response, or type your reply here to write a reply. ")
+    if (userInput == "skip"):
         print("Skipping this message.")
+    elif (userInput == "autocomplete"):
+        get_other_comments(mentn)
     else:
-        explanation = ("\n\n*****\n\nBeep boop, I'm a bot! I generate predictive text based on your comment history using genetic programming. (This comment was written by my programmer.)\n\nHave me predict your next comment by replying with /u/MedianJoseph autocomplete.\n\nCheck out my source code on [GitHub](https://github.com/cephalopea/AverageJoe)!")
+        explanation = ("\n\n*****\n\nBeep boop, I'm a bot! I generate predictive text based on your comment history using genetic programming (this comment was written by my programmer).\n\nHave me predict your next comment by replying with /u/MedianJoseph autocomplete.\n\nCheck out my source code on [GitHub](https://github.com/cephalopea/AverageJoe)!")
         mentn.reply(userInput + explanation)
         print("Replied to comment.")
 
@@ -79,7 +80,7 @@ def get_operator_reply(mentn):
 def check_if_reply(container):
     print("Checking for new comments fitting criteria.")
     for comment in container:
-        if ('insert search term here' in comment.body):
+        if ('predictive text' in comment.body) or ('artificial intelligence' in comment.body) or (' bot ' in comment.body) or (' bots ' in comment.body) or (' AI ' in comment.body) or ('robot' in comment.body) or (' boop ' in comment.body) or ('autocomplete' in comment.body) or ('autocorrect' in comment.body) or (' beep ' in comment.body):
             if joe_check(comment) == True:
                 print("Not replying.")
             else:
@@ -106,16 +107,24 @@ def get_other_comments(cment):
 #processes user's comments into one long, awful list of words
 def process_raw_comments(cList, cment):
     newList = []
+    lengths = []
     for comment in cList:
         words = comment.split(" ")
+        lengths.append(len(words))
         for word in words:
             newList.append(word)
+    allLengths = 0
+    for number in lengths:
+        allLengths = allLengths + number
+    avgLength = str(allLengths/len(lengths))
     export_words(newList, cment)
     return newList
 
 #exports words to .txt file and runs .jar with clojure thing
 def export_words(wordList, cment):
     wordFile = open(wordPath, 'w+')
+    wordFile.write(avgLength)
+    wordFile.write(" ")
     for word in wordList:
         wordFile.write(word)
         wordFile.write(" ")
@@ -132,7 +141,7 @@ def reply(cment):
     message = get_joe_reply()
     userInput = input("Here's what I've come up with: " + message[0] + ". Should I reply with that? ")
     if userInput == "yes":
-        explanation = ("\n\n*****\n\nBeep boop, I'm a bot! I generate predictive text based on your comment history using genetic programming.\n\nHave me predict your next comment by replying with /u/MedianJoseph autocomplete.\n\nCheck out my source code on [GitHub](https://github.com/cephalopea/AverageJoe)!")
+        explanation = ("\n\n*****\n\nBeep boop, I'm a bot! I generate predictive text based on your comment history using genetic programming.\n\nHave me do an impression of you by replying with /u/placeholder autocomplete.\n\nCheck out my source code on [GitHub](https://github.com/cephalopea/AverageJoe)!")
         replyText = ("Here's my best guess at what you'd say next: *" + message[0] + "*." + explanation)
         cment.reply(replyText)
         oldComments.append(cment.author.name + '\n')
@@ -144,13 +153,13 @@ def reply(cment):
         print('Replied to comment.')
         keepLooping = input("Do you want to keep going? ")
         if (keepLooping == "yes"):
-            print("Starting reply process for next mention.")
+            print("Restarting reply process.")
         else:
             sys.exit()
     else:
         keepLooping = input("Do you want to keep going? ")
         if (keepLooping == "yes"):
-            print("Attempting to respond to user mention again.")
+            print("Attempting to respond again.")
             get_other_comments(cment)
         else:
             print("Okay. Finishing without replying.")
