@@ -8,12 +8,12 @@
 (def samplewords
   '("the" "dog" "ran" "towards" "the" "big" "fat" "steak" "so" "he" "could" "eat" "it" "but" "the" "dog" "was" "eaten" "by" "a" "big" "bear" "towards" "the" "end" "of" "his" "life"))
 
-;The filepath of the source file used by this script.
+;The filepaths of the source files used by this script.
 (def wordsource
-  "something.txt")
+  "/Users/Caiti/Documents/theRealAverageJoe/redditinput.txt")
 
 (def exportsource
-  "something.txt")
+  "/Users/Caiti/Documents/theRealAverageJoe/joeoutput.txt")
 
 (defn getwords
   "Retrieves contents of a file, splits its contents at spaces. Output is formatted like samplewords."
@@ -21,9 +21,13 @@
   (let [words (slurp filepath)]
     (clojure.string/split words #"\s+")))
 
-;Doesn't really need a def, but makes my life easier. Formatted output of source file.
+;Formatted output of the source file, excluding the first element, which is a number from the Python script.
 (def words
-  (getwords wordsource))
+  (rest (getwords wordsource)))
+
+;Rounded down, integerized average word length of a user's comment from source file.
+(def avglength
+  (int (Math/floor (Float/parseFloat (first (getwords wordsource))))))
 
 (defn findoneword
   "Takes a word and a list with at least 2 items. Returns a list of (next words)."
@@ -47,6 +51,7 @@
     (let [nextmap (assoc wordmap :next lump)]
       (assoc passedmap (keyword word) nextmap))))
 
+;this is finicky when passed repetitive lists, especially when repetitive at the end, which get java.indexoutofbounds
 (defn processonecontainer
   "Processes a list of words, returns a big map of word maps from useonewordmap."
   [container]
@@ -72,12 +77,12 @@
   (processonecontainer words))
 
 (defn random-genome
-  "Returns a random genome of ten words from a given container of words."
+  "Returns a random genome of 25 words from a given container of words."
   [wordlist]
-  (repeatedly 25 #(rand-nth wordlist)))
+  (repeatedly avglength #(rand-nth wordlist)))
 
 (defn badness
-  "Badness function based on whether each next word in the genome is in the list of possible next words."
+  "Badness function based on word sequence, and how many unique(ish) words are used."
   [genome]
   (let [member 0
         badscore 1]
@@ -151,72 +156,12 @@
   (spit exportsource (clojure.string/join " " genome)))
 
 (defn -main
-  "Runs in .jar file."
+  "Used by .jar file."
   [& args]
   (export (evolve 200 200)))
-
 ;; @@
 ;; ->
-;;; Starting evolution...
-;;; ======================
-;;; Generation: 0
-;;; Best badness: 191
-;;; Best genome: (but and is the off That but out. roam she mine is sold bisexual. only big friends for me. to can engage unhappy Youtube attention)
-;;; Median badness: 211
-;;; ======================
-;;; Generation: 1
-;;; Best badness: 190
-;;; Best genome: [good thinking is. I like important awful my them definitely thing. you doing your only big friends for me. to can engage unhappy Youtube attention]
-;;; Median badness: 200
-;;; ======================
-;;; Generation: 2
-;;; Best badness: 190
-;;; Best genome: [good thinking is. I like important awful my them definitely thing. you doing your only big friends for me. to can engage unhappy Youtube attention]
-;;; Median badness: 191
-;;; ======================
-;;; Generation: 3
-;;; Best badness: 190
-;;; Best genome: [good thinking is. I like important awful my them definitely mine the sold bisexual. only big friends for me. to can engage unhappy Youtube attention]
-;;; Median badness: 190
-;;; ======================
-;;; Generation: 4
-;;; Best badness: 169
-;;; Best genome: [good thinking is. I like important and my them definitely thing. you doing your only big friends for me. to can engage unhappy Youtube attention]
-;;; Median badness: 190
-;;; ======================
-;;; Generation: 5
-;;; Best badness: 169
-;;; Best genome: [good thinking is. I like important and my them definitely thing. you doing your only big friends for me. to can engage unhappy Youtube attention]
-;;; Median badness: 190
-;;; ======================
-;;; Generation: 6
-;;; Best badness: 158
-;;; Best genome: [good thinking is. I like important and my them definitely thing. you them bisexual. only big friends for me. to can engage unhappy and attention]
-;;; Median badness: 169
-;;; ======================
-;;; Generation: 7
-;;; Best badness: 158
-;;; Best genome: [good thinking is. I like important and my them definitely thing. you doing your only big friends for me. to can engage unhappy and attention]
-;;; Median badness: 169
-;;; ======================
-;;; Generation: 8
-;;; Best badness: 158
-;;; Best genome: [good thinking is. I like important and my them definitely thing. you doing your only big friends for me. to can aggression unhappy and attention]
-;;; Median badness: 158
-;;; ======================
-;;; Generation: 9
-;;; Best badness: 158
-;;; Best genome: [good thinking is. I like important and would them definitely thing. you doing your only big friends for me. to can engage unhappy and attention]
-;;; Median badness: 158
-;;; ======================
-;;; Generation: 10
-;;; Best badness: 158
-;;; Best genome: [good thinking is. I like important and my them definitely thing. you doing your world big friends for me. to can aggression unhappy and attention]
-;;; Median badness: 158
-;;; ======================
-;;; Evolution complete.
-;;; Best genome: [good thinking is. I like important and my them definitely thing. you I your only big friends for me. to I engage unhappy and attention]
-;;; Best badness: 158
+;;; (or thread: bot series](https://www.reddit.com/r/Fantasy/wiki/authorappreciation) or Contact any)
 ;;; 
 ;; <-
 ;; =>
